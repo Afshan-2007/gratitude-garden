@@ -1,0 +1,79 @@
+body {
+  margin: 0;
+  font-family: "Georgia", serif;
+  background: linear-gradient(to bottom, #e7eadc, #f3e9d2);
+}
+
+/* Garden container */
+.garden {
+  position: relative;
+  height: 320px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: linear-gradient(#aee1f9, #cdeac0);
+}
+
+/* Soil */
+.soil {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 50px;
+  background: linear-gradient(#5c3d2e, #3e2723);
+}
+
+/* Sun */
+.sun {
+  position: absolute;
+  right: 40px;
+  top: 20px;
+  font-size: 28px;
+}
+
+/* Clouds */
+.cloud {
+  position: absolute;
+  font-size: 20px;
+  opacity: 0.8;
+}
+/* 🌬️ Plant sway animation */
+@keyframes sway {
+  0% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+  100% { transform: rotate(-2deg); }
+}
+
+/* Apply to plant wrapper */
+.plant-animate {
+  animation: sway 3s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+/* ☁️ Cloud movement */
+@keyframes cloudMove {
+  0% {
+    transform: translateX(-100px);
+  }
+  100% {
+    transform: translateX(100vw);
+  }
+}
+
+.cloud {
+  position: absolute;
+  font-size: 22px;
+  opacity: 0.7;
+  animation: cloudMove linear infinite;
+}
+
+/* Different speeds */
+.cloud.slow {
+  animation-duration: 40s;
+}
+
+.cloud.medium {
+  animation-duration: 25s;
+}
+
+.cloud.fast {
+  animation-duration: 18s;
+}

@@ -1,0 +1,1511 @@
+html
+
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memorix — AI Flashcard Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F7F5F0;
+  --surface: #FFFFFF;
+  --surface2: #F0EDE6;
+  --surface3: #E8E4DB;
+  --border: #E2DDD4;
+  --text: #1A1714;
+  --text2: #6B6560;
+  --text3: #9B968F;
+  --accent: #E8622A;
+  --accent2: #F0934F;
+  --accent-soft: #FDF0E8;
+  --green: #2A9B6E;
+  --green-soft: #E8F7F1;
+  --blue: #2A6AE8;
+  --blue-soft: #E8F0FD;
+  --yellow: #D4A017;
+  --yellow-soft: #FDF7E0;
+  --red: #D93B3B;
+  --red-soft: #FDE8E8;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow: 0 4px 16px rgba(0,0,0,0.07), 0 2px 6px rgba(0,0,0,0.05);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.06);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-lg: 24px;
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+[data-theme="dark"] {
+  --bg: #131210;
+  --surface: #1E1C19;
+  --surface2: #252320;
+  --surface3: #2E2B27;
+  --border: #35322E;
+  --text: #F2EFE8;
+  --text2: #9B9590;
+  --text3: #6B6560;
+  --accent-soft: #2E1F15;
+  --green-soft: #152419;
+  --blue-soft: #141E2E;
+  --yellow-soft: #271E08;
+  --red-soft: #271414;
+  --shadow: 0 4px 16px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.2);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.3);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background var(--transition), color var(--transition);
+}
+h1, h2, h3, h4 { font-family: 'Cabinet Grotesk', sans-serif; }
+
+/* ── LAYOUT ── */
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 240px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  position: fixed;
+  height: 100vh;
+  top: 0; left: 0;
+  z-index: 100;
+  transition: transform var(--transition), background var(--transition);
+}
+.main { margin-left: 240px; flex: 1; min-height: 100vh; }
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; }
+}
+
+/* ── SIDEBAR ── */
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  padding: 4px 8px 24px;
+  text-decoration: none;
+}
+.logo-icon {
+  width: 36px; height: 36px;
+  background: var(--accent);
+  border-radius: 10px;
+  display: grid; place-items: center;
+  font-size: 18px;
+}
+.logo-text {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--text);
+}
+.logo-text span { color: var(--accent); }
+.nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--text2);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all var(--transition);
+  border: none; background: none; text-align: left; width: 100%;
+}
+.nav-item:hover { background: var(--surface2); color: var(--text); }
+.nav-item.active { background: var(--accent-soft); color: var(--accent); }
+.nav-item .icon { font-size: 18px; width: 24px; text-align: center; }
+.nav-section-label {
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text3);
+  padding: 16px 12px 6px;
+}
+.sidebar-footer {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.user-chip {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.user-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: grid; place-items: center;
+  font-size: 14px; color: white; font-weight: 700;
+}
+.user-name { font-size: 13px; font-weight: 500; }
+.user-plan { font-size: 11px; color: var(--text3); }
+
+/* ── PAGES ── */
+.page { display: none; padding: 32px; max-width: 1200px; margin: 0 auto; animation: fadeUp 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeUp { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: none; } }
+
+/* ── TOP BAR ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 32px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar-title { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 18px; }
+.topbar-actions { display: flex; align-items: center; gap: 12px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  border: none; text-decoration: none;
+}
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: #d45520; transform: translateY(-1px); box-shadow: var(--shadow); }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--surface3); }
+.btn-ghost { background: transparent; color: var(--text2); }
+.btn-ghost:hover { background: var(--surface2); color: var(--text); }
+.btn-sm { padding: 7px 14px; font-size: 13px; }
+.btn-icon { padding: 9px; border-radius: 10px; }
+.hamburger { display: none; background: none; border: none; cursor: pointer; color: var(--text); font-size: 20px; }
+@media (max-width: 768px) { .hamburger { display: block; } }
+
+/* ── LANDING ── */
+.landing {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  background: var(--bg);
+}
+.hero {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 60px; align-items: center;
+  padding: 80px 32px 60px;
+  max-width: 1100px; margin: 0 auto;
+}
+@media (max-width: 900px) { .hero { grid-template-columns: 1fr; padding: 60px 24px; } }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid rgba(232,98,42,0.2);
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 13px; font-weight: 500;
+  margin-bottom: 24px;
+}
+.hero-title {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: clamp(36px, 5vw, 58px);
+  line-height: 1.1;
+  margin-bottom: 20px;
+}
+.hero-title em {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  color: var(--accent);
+}
+.hero-subtitle {
+  font-size: 17px; line-height: 1.6;
+  color: var(--text2);
+  margin-bottom: 36px;
+  max-width: 460px;
+}
+.hero-cta { display: flex; gap: 12px; flex-wrap: wrap; }
+.hero-visual {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.hero-card-stack { position: relative; width: 320px; height: 260px; }
+.hero-card {
+  position: absolute;
+  width: 300px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+}
+.hero-card:nth-child(1) { transform: rotate(-6deg) translateY(20px); opacity: 0.5; right: 0; top: 30px; }
+.hero-card:nth-child(2) { transform: rotate(-2deg) translateY(10px); opacity: 0.75; }
+.hero-card:nth-child(3) { transform: rotate(1deg); z-index: 3; left: 0; top: 0; }
+.hero-card-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 12px; }
+.hero-card-q { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 16px; line-height: 1.4; margin-bottom: 16px; }
+.hero-card-divider { height: 1px; background: var(--border); margin-bottom: 16px; }
+.hero-card-a { font-size: 14px; color: var(--text2); line-height: 1.5; }
+.steps {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  padding: 0 32px 80px;
+  max-width: 1100px; margin: 0 auto;
+}
+@media (max-width: 700px) { .steps { grid-template-columns: 1fr; padding: 0 24px 60px; } }
+.step {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.step:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+.step-num {
+  width: 36px; height: 36px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 10px;
+  display: grid; place-items: center;
+  font-weight: 800; font-size: 16px;
+  margin-bottom: 16px;
+}
+.step h3 { font-weight: 700; font-size: 17px; margin-bottom: 8px; }
+.step p { font-size: 14px; color: var(--text2); line-height: 1.6; }
+
+/* ── DASHBOARD ── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px; margin-bottom: 32px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-sm);
+}
+.stat-icon { font-size: 22px; margin-bottom: 10px; }
+.stat-value { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 28px; line-height: 1; margin-bottom: 4px; }
+.stat-label { font-size: 13px; color: var(--text2); }
+.stat-change { font-size: 12px; color: var(--green); font-weight: 500; margin-top: 4px; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.section-title { font-weight: 700; font-size: 18px; }
+.dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 900px) { .dash-grid { grid-template-columns: 1fr; } }
+
+/* ── INPUT PANEL ── */
+.input-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+}
+.input-panel h3 { font-weight: 700; font-size: 16px; margin-bottom: 16px; }
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition);
+  margin-bottom: 16px;
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.drop-icon { font-size: 32px; margin-bottom: 12px; }
+.drop-text { font-weight: 500; font-size: 14px; margin-bottom: 4px; }
+.drop-sub { font-size: 12px; color: var(--text3); }
+.divider-or {
+  display: flex; align-items: center; gap: 12px;
+  color: var(--text3); font-size: 13px; margin: 16px 0;
+}
+.divider-or::before, .divider-or::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+textarea {
+  width: 100%; min-height: 140px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; line-height: 1.6;
+  color: var(--text);
+  resize: vertical;
+  transition: border-color var(--transition);
+  outline: none;
+}
+textarea:focus { border-color: var(--accent); }
+textarea::placeholder { color: var(--text3); }
+.gen-options {
+  display: flex; align-items: center; gap: 12px;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+.chip {
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 13px; font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text2);
+  transition: all var(--transition);
+}
+.chip.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.chip:hover:not(.active) { background: var(--surface3); }
+
+/* ── FLASHCARD PREVIEW ── */
+.cards-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+}
+.card-preview-wrap { perspective: 1000px; margin-bottom: 20px; }
+.card-preview {
+  width: 100%; height: 180px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+.card-preview.flipped { transform: rotateY(180deg); }
+.card-face, .card-back {
+  position: absolute; inset: 0;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  backface-visibility: hidden;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.card-back { transform: rotateY(180deg); background: var(--accent-soft); border-color: rgba(232,98,42,0.2); }
+.card-face-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-bottom: 10px; }
+.card-face-q { font-weight: 600; font-size: 16px; line-height: 1.4; }
+.card-back-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 10px; }
+.card-back-a { font-size: 15px; line-height: 1.5; color: var(--text); }
+.card-hint { font-size: 12px; color: var(--text3); text-align: center; margin-bottom: 16px; }
+.card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.cards-list { display: flex; flex-direction: column; gap: 10px; max-height: 360px; overflow-y: auto; }
+.cards-list::-webkit-scrollbar { width: 4px; }
+.cards-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.card-list-item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  transition: all var(--transition);
+}
+.card-list-item:hover { border-color: var(--accent); }
+.card-list-q { font-weight: 500; font-size: 14px; margin-bottom: 4px; }
+.card-list-a { font-size: 13px; color: var(--text2); }
+.card-list-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+/* ── STUDY MODE ── */
+.study-wrap {
+  max-width: 600px; margin: 0 auto; padding: 24px 0;
+}
+.study-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 28px;
+}
+.progress-bar-wrap { flex: 1; height: 6px; background: var(--surface2); border-radius: 100px; margin: 0 16px; overflow: hidden; }
+.progress-bar-fill {
+  height: 100%; background: var(--accent);
+  border-radius: 100px;
+  transition: width 0.5s ease;
+}
+.study-counter { font-size: 13px; color: var(--text2); font-weight: 500; white-space: nowrap; }
+.study-card-wrap { perspective: 1200px; margin-bottom: 24px; }
+.study-card {
+  width: 100%; height: 280px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+.study-card.flipped { transform: rotateY(180deg); }
+.study-front, .study-back {
+  position: absolute; inset: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  backface-visibility: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.study-back { transform: rotateY(180deg); background: var(--surface); }
+.study-face-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-bottom: 16px; }
+.study-q { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 22px; line-height: 1.3; }
+.study-a { font-size: 17px; line-height: 1.6; color: var(--text2); }
+.tap-hint { font-size: 13px; color: var(--text3); text-align: center; margin-bottom: 16px; }
+.rating-btns {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.rating-btn {
+  padding: 12px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  text-align: center;
+  transition: all var(--transition);
+  font-family: 'DM Sans', sans-serif;
+}
+.rating-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.rating-btn.again { border-color: var(--red); }
+.rating-btn.again:hover { background: var(--red-soft); }
+.rating-btn.hard { border-color: var(--yellow); }
+.rating-btn.hard:hover { background: var(--yellow-soft); }
+.rating-btn.good { border-color: var(--blue); }
+.rating-btn.good:hover { background: var(--blue-soft); }
+.rating-btn.easy { border-color: var(--green); }
+.rating-btn.easy:hover { background: var(--green-soft); }
+.rating-label { font-weight: 600; font-size: 14px; }
+.rating-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
+.study-complete {
+  text-align: center; padding: 60px 24px;
+}
+.complete-emoji { font-size: 56px; margin-bottom: 20px; }
+.complete-title { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 28px; margin-bottom: 10px; }
+.complete-sub { color: var(--text2); font-size: 16px; margin-bottom: 32px; }
+.complete-stats {
+  display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+.complete-stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 24px;
+  text-align: center;
+}
+.complete-stat-value { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 26px; }
+.complete-stat-label { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+/* ── DECKS ── */
+.decks-toolbar {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 24px; flex-wrap: wrap;
+}
+.search-box {
+  flex: 1; min-width: 200px;
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+}
+.search-box input {
+  border: none; background: none; outline: none;
+  font-family: 'DM Sans', sans-serif; font-size: 14px;
+  color: var(--text); flex: 1;
+}
+.search-box input::placeholder { color: var(--text3); }
+select {
+  padding: 10px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; color: var(--text);
+  outline: none; cursor: pointer;
+}
+.decks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+.deck-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative; overflow: hidden;
+}
+.deck-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+}
+.deck-card.orange::before { background: var(--accent); }
+.deck-card.green::before { background: var(--green); }
+.deck-card.blue::before { background: var(--blue); }
+.deck-card.yellow::before { background: var(--yellow); }
+.deck-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+.deck-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+.deck-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: grid; place-items: center;
+  font-size: 20px;
+}
+.deck-icon.orange { background: var(--accent-soft); }
+.deck-icon.green { background: var(--green-soft); }
+.deck-icon.blue { background: var(--blue-soft); }
+.deck-icon.yellow { background: var(--yellow-soft); }
+.deck-menu { color: var(--text3); font-size: 20px; cursor: pointer; }
+.deck-title { font-weight: 700; font-size: 17px; margin-bottom: 6px; }
+.deck-meta { font-size: 13px; color: var(--text2); margin-bottom: 16px; }
+.deck-progress { height: 4px; background: var(--surface2); border-radius: 100px; overflow: hidden; margin-bottom: 8px; }
+.deck-progress-fill { height: 100%; border-radius: 100px; }
+.deck-stats { display: flex; justify-content: space-between; font-size: 12px; color: var(--text3); }
+.empty-state {
+  text-align: center; padding: 60px 24px;
+  color: var(--text2);
+}
+.empty-icon { font-size: 48px; margin-bottom: 16px; }
+.empty-title { font-weight: 700; font-size: 18px; margin-bottom: 8px; color: var(--text); }
+.empty-sub { font-size: 14px; line-height: 1.6; margin-bottom: 24px; }
+
+/* ── SETTINGS ── */
+.settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 700px) { .settings-grid { grid-template-columns: 1fr; } }
+.settings-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+.settings-card h3 { font-weight: 700; font-size: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+.setting-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.setting-row:last-child { border-bottom: none; }
+.setting-label { font-size: 14px; font-weight: 500; }
+.setting-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.toggle {
+  width: 44px; height: 24px;
+  background: var(--surface3);
+  border-radius: 100px;
+  position: relative;
+  cursor: pointer;
+  transition: background var(--transition);
+  flex-shrink: 0;
+  border: none;
+}
+.toggle.on { background: var(--accent); }
+.toggle::after {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  background: white;
+  border-radius: 50%;
+  top: 3px; left: 3px;
+  transition: transform var(--transition);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.toggle.on::after { transform: translateX(20px); }
+.profile-header {
+  display: flex; align-items: center; gap: 20px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+}
+.profile-avatar {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: grid; place-items: center;
+  font-size: 26px; color: white; font-weight: 700;
+  flex-shrink: 0;
+}
+.profile-name { font-weight: 700; font-size: 20px; margin-bottom: 4px; }
+.profile-email { font-size: 14px; color: var(--text2); }
+
+/* ── RING CHART ── */
+.ring-wrap { display: flex; align-items: center; gap: 24px; }
+.ring { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
+.ring svg { transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: var(--surface2); stroke-width: 6; }
+.ring-fill { fill: none; stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+.ring-center {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 17px;
+  font-family: 'Cabinet Grotesk', sans-serif;
+}
+.ring-stats { flex: 1; }
+.ring-stats-title { font-weight: 700; font-size: 15px; margin-bottom: 8px; }
+.ring-stat-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text2); margin-bottom: 6px; }
+.ring-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── STREAK BAR ── */
+.streak-row { display: flex; gap: 5px; margin-top: 12px; }
+.streak-day {
+  flex: 1; height: 28px;
+  background: var(--surface2);
+  border-radius: 5px;
+  display: grid; place-items: center;
+  font-size: 10px; color: var(--text3);
+  transition: background var(--transition);
+}
+.streak-day.done { background: var(--accent); color: white; }
+.streak-day.today { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent); }
+
+/* ── TOAST ── */
+#toast-container {
+  position: fixed; bottom: 24px; right: 24px;
+  display: flex; flex-direction: column-reverse; gap: 8px;
+  z-index: 9999;
+}
+.toast {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--text);
+  color: var(--bg);
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  animation: toastIn 0.3s ease;
+  min-width: 240px;
+}
+.toast-icon { font-size: 16px; }
+@keyframes toastIn { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: none; } }
+
+/* ── GENERATION PAGE ── */
+.gen-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 900px) { .gen-layout { grid-template-columns: 1fr; } }
+.loading-wrap { display: flex; flex-direction: column; align-items: center; padding: 40px; }
+.loading-spinner {
+  width: 40px; height: 40px;
+  border: 3px solid var(--surface2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin-bottom: 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── MOBILE OVERLAY ── */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); z-index: 99;
+}
+.overlay.show { display: block; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- LANDING PAGE -->
+<div id="page-landing" class="landing active-landing">
+  <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="logo-icon">🧠</div>
+      <span class="logo-text">Memor<span>ix</span></span>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;">
+      <button class="btn btn-ghost btn-sm" onclick="showApp()">Sign In</button>
+      <button class="btn btn-primary btn-sm" onclick="showApp()">Get Started Free</button>
+      <button class="btn btn-icon btn-secondary" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+    </div>
+  </div>
+  <section class="hero">
+    <div>
+      <div class="hero-badge">✨ Powered by Claude AI</div>
+      <h1 class="hero-title">Turn your notes into <em>smart</em> flashcards</h1>
+      <p class="hero-subtitle">Paste your lecture notes or upload a PDF — Memorix instantly creates Q&A flashcards and uses spaced repetition to help you actually remember.</p>
+      <div class="hero-cta">
+        <button class="btn btn-primary" onclick="showApp()" style="font-size:15px;padding:13px 28px;">Start for free →</button>
+        <button class="btn btn-secondary" onclick="showApp('study')">See how it works</button>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-card-stack">
+        <div class="hero-card">
+          <div class="hero-card-label">Question</div>
+          <div class="hero-card-q">What is the primary function of the hippocampus?</div>
+          <div class="hero-card-divider"></div>
+          <div class="hero-card-a">Memory consolidation and spatial navigation</div>
+        </div>
+        <div class="hero-card">
+          <div class="hero-card-label">Question</div>
+          <div class="hero-card-q">Define photosynthesis</div>
+        </div>
+        <div class="hero-card" style="opacity:0.35">
+          <div class="hero-card-q">...</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section style="padding:0 32px 40px;max-width:1100px;margin:0 auto;">
+    <p style="text-align:center;font-size:13px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:28px;font-weight:600;">How it works</p>
+  </section>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Paste or Upload</h3>
+      <p>Drop in your lecture notes, textbook excerpts, or any study material. Supports plain text and PDF files.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>AI Generates Cards</h3>
+      <p>Claude AI analyzes your content and creates smart Q&A flashcards covering all key concepts automatically.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>Study & Retain</h3>
+      <p>Use spaced repetition study mode — rate each card and Memorix schedules them for optimal long-term memory.</p>
+    </div>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div class="app" id="app-shell" style="display:none">
+  <nav class="sidebar" id="sidebar">
+    <a class="logo" href="#" onclick="navigate('dashboard')">
+      <div class="logo-icon">🧠</div>
+      <span class="logo-text">Memor<span>ix</span></span>
+    </a>
+    <div class="nav">
+      <div class="nav-section-label">Main</div>
+      <button class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
+        <span class="icon">🏠</span> Dashboard
+      </button>
+      <button class="nav-item" data-page="generate" onclick="navigate('generate')">
+        <span class="icon">⚡</span> Generate
+      </button>
+      <button class="nav-item" data-page="study" onclick="navigate('study')">
+        <span class="icon">📚</span> Study Mode
+      </button>
+      <div class="nav-section-label">Library</div>
+      <button class="nav-item" data-page="decks" onclick="navigate('decks')">
+        <span class="icon">🗂️</span> My Decks
+      </button>
+      <div class="nav-section-label">Account</div>
+      <button class="nav-item" data-page="settings" onclick="navigate('settings')">
+        <span class="icon">⚙️</span> Settings
+      </button>
+    </div>
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-avatar">A</div>
+        <div>
+          <div class="user-name">Alex Kim</div>
+          <div class="user-plan">Free plan</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="hamburger" onclick="toggleSidebar()">☰</button>
+        <span class="topbar-title" id="topbar-title">Dashboard</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-icon btn-ghost" onclick="toggleTheme()" title="Toggle theme" style="font-size:18px;">🌙</button>
+        <button class="btn btn-primary btn-sm" onclick="navigate('generate')">+ New Deck</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD PAGE -->
+    <div id="page-dashboard" class="page active">
+      <div style="margin-bottom:28px;">
+        <h2 style="font-size:24px;font-weight:800;margin-bottom:6px;">Good afternoon, Alex! 👋</h2>
+        <p style="color:var(--text2);font-size:15px;">You have 12 cards due for review today.</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">🔥</div>
+          <div class="stat-value">7</div>
+          <div class="stat-label">Day Streak</div>
+          <div class="stat-change">↑ 3 from last week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📇</div>
+          <div class="stat-value">248</div>
+          <div class="stat-label">Cards Reviewed</div>
+          <div class="stat-change">↑ 18 today</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-value">73%</div>
+          <div class="stat-label">Mastery Level</div>
+          <div class="stat-change">↑ 4% this week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📚</div>
+          <div class="stat-value">5</div>
+          <div class="stat-label">Active Decks</div>
+        </div>
+      </div>
+      <div class="dash-grid">
+        <div class="input-panel">
+          <h3>Quick Generate</h3>
+          <div class="drop-zone" id="dash-drop" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event,'dash-drop')" ondrop="handleDrop(event)">
+            <div class="drop-icon">📄</div>
+            <div class="drop-text">Drop a PDF here</div>
+            <div class="drop-sub">or click to browse</div>
+          </div>
+          <div class="divider-or">or</div>
+          <textarea placeholder="Paste your notes here..." rows="4"></textarea>
+          <div style="margin-top:12px;">
+            <button class="btn btn-primary" style="width:100%" onclick="navigate('generate');startGeneration()">⚡ Generate Flashcards</button>
+          </div>
+        </div>
+        <div>
+          <div class="input-panel" style="margin-bottom:20px;">
+            <h3>Weekly Progress</h3>
+            <div class="ring-wrap" style="margin-bottom:16px;">
+              <div class="ring">
+                <svg viewBox="0 0 80 80" width="80" height="80">
+                  <circle class="ring-bg" cx="40" cy="40" r="34"/>
+                  <circle class="ring-fill" cx="40" cy="40" r="34" stroke="var(--accent)"
+                    stroke-dasharray="213.6" stroke-dashoffset="57"/>
+                </svg>
+                <div class="ring-center">73%</div>
+              </div>
+              <div class="ring-stats">
+                <div class="ring-stats-title">Overall Mastery</div>
+                <div class="ring-stat-row"><span class="ring-dot" style="background:var(--green)"></span>Mastered: 89 cards</div>
+                <div class="ring-stat-row"><span class="ring-dot" style="background:var(--yellow)"></span>Learning: 42 cards</div>
+                <div class="ring-stat-row"><span class="ring-dot" style="background:var(--red)"></span>Due: 12 cards</div>
+              </div>
+            </div>
+            <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:8px;">This week's streak</div>
+            <div class="streak-row">
+              <div class="streak-day done">M</div>
+              <div class="streak-day done">T</div>
+              <div class="streak-day done">W</div>
+              <div class="streak-day done">T</div>
+              <div class="streak-day done">F</div>
+              <div class="streak-day today">S</div>
+              <div class="streak-day">S</div>
+            </div>
+          </div>
+          <div class="input-panel">
+            <div class="section-header">
+              <h3 style="margin-bottom:0">Due for review</h3>
+              <button class="btn btn-primary btn-sm" onclick="navigate('study')">Study now</button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface2);border-radius:10px;">
+                <div>
+                  <div style="font-size:14px;font-weight:500;">Biology 101</div>
+                  <div style="font-size:12px;color:var(--text3);">6 cards due</div>
+                </div>
+                <span style="background:var(--red-soft);color:var(--red);padding:3px 10px;border-radius:100px;font-size:12px;font-weight:600;">6 due</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface2);border-radius:10px;">
+                <div>
+                  <div style="font-size:14px;font-weight:500;">World History</div>
+                  <div style="font-size:12px;color:var(--text3);">4 cards due</div>
+                </div>
+                <span style="background:var(--yellow-soft);color:var(--yellow);padding:3px 10px;border-radius:100px;font-size:12px;font-weight:600;">4 due</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface2);border-radius:10px;">
+                <div>
+                  <div style="font-size:14px;font-weight:500;">Calculus II</div>
+                  <div style="font-size:12px;color:var(--text3);">2 cards due</div>
+                </div>
+                <span style="background:var(--yellow-soft);color:var(--yellow);padding:3px 10px;border-radius:100px;font-size:12px;font-weight:600;">2 due</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GENERATE PAGE -->
+    <div id="page-generate" class="page">
+      <div style="margin-bottom:24px;">
+        <h2 style="font-size:22px;font-weight:800;margin-bottom:6px;">Generate Flashcards</h2>
+        <p style="color:var(--text2);font-size:14px;">Upload a PDF or paste text — AI will create smart Q&A flashcards instantly.</p>
+      </div>
+      <div class="gen-layout">
+        <div>
+          <div class="input-panel">
+            <h3>📄 Input Content</h3>
+            <div class="drop-zone" id="gen-drop" onclick="showToast('📎 File picker would open here','info')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event,'gen-drop')" ondrop="handleDrop(event)">
+              <div class="drop-icon">☁️</div>
+              <div class="drop-text">Drag & drop your PDF here</div>
+              <div class="drop-sub">Supports PDF, .txt, .docx — max 50MB</div>
+            </div>
+            <div class="divider-or">or type / paste</div>
+            <textarea id="gen-text" placeholder="Paste your notes, textbook excerpt, or any study material here...
+
+Example: The mitochondria is the powerhouse of the cell. It produces ATP through cellular respiration..." rows="8"></textarea>
+            <div style="margin-top:16px;">
+              <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:10px;">Number of cards</div>
+              <div class="gen-options">
+                <div class="chip active" onclick="selectChip(this)">5 cards</div>
+                <div class="chip" onclick="selectChip(this)">10 cards</div>
+                <div class="chip" onclick="selectChip(this)">15 cards</div>
+                <div class="chip" onclick="selectChip(this)">20 cards</div>
+              </div>
+            </div>
+            <div style="margin-top:16px;">
+              <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:10px;">Difficulty</div>
+              <div class="gen-options">
+                <div class="chip" onclick="selectChip(this)">Easy</div>
+                <div class="chip active" onclick="selectChip(this)">Medium</div>
+                <div class="chip" onclick="selectChip(this)">Hard</div>
+              </div>
+            </div>
+            <div style="margin-top:20px;display:flex;gap:10px;">
+              <button class="btn btn-primary" style="flex:1;" id="gen-btn" onclick="generateCards()">⚡ Generate Flashcards</button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="cards-panel">
+            <div class="section-header">
+              <h3 style="margin-bottom:0">📋 Preview</h3>
+              <div style="display:flex;gap:8px;" id="card-actions" style="display:none">
+                <button class="btn btn-secondary btn-sm" onclick="generateCards()">↺ Regenerate</button>
+                <button class="btn btn-primary btn-sm" onclick="saveDeck()">💾 Save Deck</button>
+              </div>
+            </div>
+            <div id="gen-empty" style="padding:40px 24px;text-align:center;color:var(--text2);">
+              <div style="font-size:40px;margin-bottom:14px;">✨</div>
+              <div style="font-weight:600;font-size:16px;margin-bottom:6px;color:var(--text);">No cards yet</div>
+              <div style="font-size:14px;">Paste some text and click Generate to see your flashcards here.</div>
+            </div>
+            <div id="gen-loading" style="display:none">
+              <div class="loading-wrap">
+                <div class="loading-spinner"></div>
+                <div style="font-weight:600;font-size:15px;margin-bottom:6px;">Generating cards...</div>
+                <div style="font-size:13px;color:var(--text3);">Claude is analyzing your content</div>
+              </div>
+            </div>
+            <div id="gen-result" style="display:none">
+              <div class="card-preview-wrap">
+                <div class="card-preview" id="preview-card" onclick="flipPreviewCard()">
+                  <div class="card-face">
+                    <div class="card-face-label">Question</div>
+                    <div class="card-face-q" id="preview-q">What is the primary function of mitochondria in cells?</div>
+                  </div>
+                  <div class="card-back">
+                    <div class="card-back-label">Answer</div>
+                    <div class="card-back-a" id="preview-a">To produce ATP (adenosine triphosphate) through cellular respiration, serving as the cell's energy source.</div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-hint">Click card to flip • Showing card <span id="card-num">1</span> of <span id="card-total">5</span></div>
+              <div class="cards-list" id="cards-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STUDY PAGE -->
+    <div id="page-study" class="page">
+      <div id="study-session" style="display:block">
+        <div class="study-wrap">
+          <div class="study-header">
+            <button class="btn btn-ghost btn-sm btn-icon" onclick="navigate('decks')">←</button>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill" id="study-progress" style="width:20%"></div>
+            </div>
+            <div class="study-counter" id="study-counter">1 / 5</div>
+          </div>
+          <div style="text-align:center;margin-bottom:16px;">
+            <span style="font-size:13px;font-weight:600;color:var(--text2);">Biology 101</span>
+          </div>
+          <div class="study-card-wrap">
+            <div class="study-card" id="study-card" onclick="flipStudyCard()">
+              <div class="study-front">
+                <div class="study-face-label">Question</div>
+                <div class="study-q" id="study-q">What process do plants use to convert sunlight into energy?</div>
+              </div>
+              <div class="study-back">
+                <div class="study-face-label">Answer</div>
+                <div class="study-a" id="study-a">Photosynthesis — the process by which plants use sunlight, water, and carbon dioxide to produce oxygen and energy in the form of glucose.</div>
+              </div>
+            </div>
+          </div>
+          <div class="tap-hint" id="tap-hint">👆 Tap to reveal answer</div>
+          <div class="rating-btns" id="rating-btns" style="opacity:0.4;pointer-events:none;">
+            <div class="rating-btn again" onclick="rateCard('again')">
+              <div class="rating-label">Again</div>
+              <div class="rating-sub">< 1 min</div>
+            </div>
+            <div class="rating-btn hard" onclick="rateCard('hard')">
+              <div class="rating-label">Hard</div>
+              <div class="rating-sub">6 min</div>
+            </div>
+            <div class="rating-btn good" onclick="rateCard('good')">
+              <div class="rating-label">Good</div>
+              <div class="rating-sub">1 day</div>
+            </div>
+            <div class="rating-btn easy" onclick="rateCard('easy')">
+              <div class="rating-label">Easy</div>
+              <div class="rating-sub">4 days</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="study-complete" style="display:none">
+        <div class="study-complete">
+          <div class="complete-emoji">🎉</div>
+          <h2 class="complete-title">Session Complete!</h2>
+          <p class="complete-sub">Great work — you reviewed all cards in this session.</p>
+          <div class="complete-stats">
+            <div class="complete-stat">
+              <div class="complete-stat-value" style="color:var(--green)">3</div>
+              <div class="complete-stat-label">Easy</div>
+            </div>
+            <div class="complete-stat">
+              <div class="complete-stat-value" style="color:var(--blue)">1</div>
+              <div class="complete-stat-label">Good</div>
+            </div>
+            <div class="complete-stat">
+              <div class="complete-stat-value" style="color:var(--yellow)">1</div>
+              <div class="complete-stat-label">Hard</div>
+            </div>
+            <div class="complete-stat">
+              <div class="complete-stat-value" style="color:var(--red)">0</div>
+              <div class="complete-stat-label">Again</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="restartStudy()">Study Again</button>
+            <button class="btn btn-secondary" onclick="navigate('decks')">Back to Decks</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DECKS PAGE -->
+    <div id="page-decks" class="page">
+      <div class="section-header" style="margin-bottom:20px;">
+        <h2 style="font-size:22px;font-weight:800;">My Decks</h2>
+        <button class="btn btn-primary" onclick="navigate('generate')">+ New Deck</button>
+      </div>
+      <div class="decks-toolbar">
+        <div class="search-box">
+          <span>🔍</span>
+          <input type="text" placeholder="Search decks...">
+        </div>
+        <select><option>All subjects</option><option>Biology</option><option>History</option><option>Math</option></select>
+        <select><option>Recently studied</option><option>Most cards</option><option>Alphabetical</option></select>
+      </div>
+      <div class="decks-grid">
+        <div class="deck-card orange" onclick="navigate('study')">
+          <div class="deck-card-header">
+            <div class="deck-icon orange">🔬</div>
+            <span class="deck-menu">⋯</span>
+          </div>
+          <div class="deck-title">Biology 101</div>
+          <div class="deck-meta">32 cards · Last studied today</div>
+          <div class="deck-progress"><div class="deck-progress-fill" style="width:78%;background:var(--green)"></div></div>
+          <div class="deck-stats"><span>78% mastered</span><span style="color:var(--red)">6 due</span></div>
+        </div>
+        <div class="deck-card blue" onclick="navigate('study')">
+          <div class="deck-card-header">
+            <div class="deck-icon blue">🌍</div>
+            <span class="deck-menu">⋯</span>
+          </div>
+          <div class="deck-title">World History</div>
+          <div class="deck-meta">28 cards · Last studied yesterday</div>
+          <div class="deck-progress"><div class="deck-progress-fill" style="width:55%;background:var(--blue)"></div></div>
+          <div class="deck-stats"><span>55% mastered</span><span style="color:var(--yellow)">4 due</span></div>
+        </div>
+        <div class="deck-card yellow" onclick="navigate('study')">
+          <div class="deck-card-header">
+            <div class="deck-icon yellow">📐</div>
+            <span class="deck-menu">⋯</span>
+          </div>
+          <div class="deck-title">Calculus II</div>
+          <div class="deck-meta">45 cards · Last studied 2 days ago</div>
+          <div class="deck-progress"><div class="deck-progress-fill" style="width:42%;background:var(--yellow)"></div></div>
+          <div class="deck-stats"><span>42% mastered</span><span style="color:var(--yellow)">2 due</span></div>
+        </div>
+        <div class="deck-card green" onclick="navigate('study')">
+          <div class="deck-card-header">
+            <div class="deck-icon green">⚗️</div>
+            <span class="deck-menu">⋯</span>
+          </div>
+          <div class="deck-title">Chemistry Basics</div>
+          <div class="deck-meta">19 cards · Last studied 3 days ago</div>
+          <div class="deck-progress"><div class="deck-progress-fill" style="width:90%;background:var(--green)"></div></div>
+          <div class="deck-stats"><span>90% mastered</span><span style="color:var(--green)">0 due</span></div>
+        </div>
+        <div class="deck-card orange" onclick="navigate('study')">
+          <div class="deck-card-header">
+            <div class="deck-icon orange">💻</div>
+            <span class="deck-menu">⋯</span>
+          </div>
+          <div class="deck-title">CS: Data Structures</div>
+          <div class="deck-meta">56 cards · Last studied 5 days ago</div>
+          <div class="deck-progress"><div class="deck-progress-fill" style="width:30%;background:var(--accent)"></div></div>
+          <div class="deck-stats"><span>30% mastered</span><span style="color:var(--red)">12 due</span></div>
+        </div>
+        <div class="deck-card" style="border:2px dashed var(--border);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:180px;" onclick="navigate('generate')">
+          <div style="font-size:32px;margin-bottom:12px;">+</div>
+          <div style="font-weight:600;font-size:15px;color:var(--text2);">Create new deck</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+    <div id="page-settings" class="page">
+      <h2 style="font-size:22px;font-weight:800;margin-bottom:24px;">Settings & Profile</h2>
+      <div class="profile-header">
+        <div class="profile-avatar">A</div>
+        <div style="flex:1;">
+          <div class="profile-name">Alex Kim</div>
+          <div class="profile-email">alex.kim@university.edu</div>
+        </div>
+        <button class="btn btn-secondary btn-sm">Edit Profile</button>
+      </div>
+      <div class="settings-grid">
+        <div class="settings-card">
+          <h3>🎯 Study Preferences</h3>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Daily card goal</div>
+              <div class="setting-sub">Target cards per day</div>
+            </div>
+            <select style="padding:6px 12px;font-size:13px;">
+              <option>20 cards</option>
+              <option>30 cards</option>
+              <option>50 cards</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Auto-advance cards</div>
+              <div class="setting-sub">Move to next card automatically</div>
+            </div>
+            <button class="toggle" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Show hints</div>
+              <div class="setting-sub">Display timing hints on buttons</div>
+            </div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Shuffle cards</div>
+              <div class="setting-sub">Randomize card order</div>
+            </div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+          </div>
+        </div>
+        <div class="settings-card">
+          <h3>🔔 Reminders</h3>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Daily reminder</div>
+              <div class="setting-sub">Get notified to study</div>
+            </div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Reminder time</div>
+            </div>
+            <select style="padding:6px 12px;font-size:13px;">
+              <option>8:00 AM</option>
+              <option>12:00 PM</option>
+              <option>6:00 PM</option>
+              <option>9:00 PM</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Streak reminders</div>
+              <div class="setting-sub">Alert before losing streak</div>
+            </div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Weekly summary</div>
+              <div class="setting-sub">Email progress report</div>
+            </div>
+            <button class="toggle" onclick="this.classList.toggle('on')"></button>
+          </div>
+        </div>
+        <div class="settings-card">
+          <h3>🎨 Appearance</h3>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Dark mode</div>
+              <div class="setting-sub">Switch to dark theme</div>
+            </div>
+            <button class="toggle" id="dark-toggle" onclick="toggleTheme()"></button>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Difficulty level</div>
+              <div class="setting-sub">Default card difficulty</div>
+            </div>
+            <select style="padding:6px 12px;font-size:13px;">
+              <option>Easy</option>
+              <option selected>Medium</option>
+              <option>Hard</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Animations</div>
+              <div class="setting-sub">Card flip & transitions</div>
+            </div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+          </div>
+        </div>
+        <div class="settings-card">
+          <h3>🤖 AI Settings</h3>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Card style</div>
+              <div class="setting-sub">How AI formats answers</div>
+            </div>
+            <select style="padding:6px 12px;font-size:13px;">
+              <option>Concise</option>
+              <option selected>Detailed</option>
+              <option>Examples</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Auto-detect language</div>
+              <div class="setting-sub">Generate cards in source language</div>
+            </div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Include examples</div>
+              <div class="setting-sub">Add examples to answers</div>
+            </div>
+            <button class="toggle" onclick="this.classList.toggle('on')"></button>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:24px;display:flex;gap:12px;">
+        <button class="btn btn-primary" onclick="showToast('✅ Settings saved!','success')">Save Changes</button>
+        <button class="btn btn-secondary" onclick="showToast('🔄 Settings reset to defaults','info')">Reset Defaults</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+const CARDS = [
+  { q: "What process do plants use to convert sunlight into energy?", a: "Photosynthesis — the process by which plants use sunlight, water, and CO₂ to produce oxygen and glucose." },
+  { q: "What is the powerhouse of the cell?", a: "The mitochondria. It produces ATP through cellular respiration." },
+  { q: "Define osmosis.", a: "The movement of water molecules through a semipermeable membrane from low to high solute concentration." },
+  { q: "What is the function of ribosomes?", a: "Ribosomes are responsible for protein synthesis — they translate mRNA into polypeptide chains." },
+  { q: "What is the role of DNA in cells?", a: "DNA stores and transmits genetic information, providing the instructions for building proteins and determining traits." }
+];
+let studyIndex = 0, cardFlipped = false, previewFlipped = false;
+let currentPage = 'dashboard';
+
+// ── NAVIGATION ──
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const el = document.getElementById('page-' + page);
+  if (el) el.classList.add('active');
+  const navEl = document.querySelector(`[data-page="${page}"]`);
+  if (navEl) navEl.classList.add('active');
+  const titles = { dashboard:'Dashboard', generate:'Generate', study:'Study Mode', decks:'My Decks', settings:'Settings' };
+  document.getElementById('topbar-title').textContent = titles[page] || page;
+  currentPage = page;
+  if (page === 'study') restartStudy();
+  closeSidebar();
+}
+
+function showApp(page) {
+  document.getElementById('page-landing').style.display = 'none';
+  document.getElementById('app-shell').style.display = 'flex';
+  navigate(page || 'dashboard');
+}
+
+// ── SIDEBAR ──
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ── THEME ──
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  const toggle = document.getElementById('dark-toggle');
+  if (toggle) toggle.classList.toggle('on', !isDark);
+  showToast(isDark ? '☀️ Light mode on' : '🌙 Dark mode on', 'info');
+}
+
+// ── TOAST ──
+function showToast(msg, type='success') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  const colors = { success:'var(--green)', info:'var(--blue)', error:'var(--red)' };
+  t.innerHTML = `<span class="toast-icon" style="color:${colors[type]||'var(--accent)'}">●</span>${msg}`;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(20px)'; t.style.transition='all 0.3s'; setTimeout(()=>t.remove(),300); }, 2500);
+}
+
+// ── DRAG & DROP ──
+function handleDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function handleDragLeave(e, id) { document.getElementById(id)?.classList.remove('drag-over'); }
+function handleDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  showToast('📄 PDF uploaded successfully!', 'success');
+}
+
+// ── CHIPS ──
+function selectChip(el) {
+  el.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── GENERATION ──
+const sampleCards = [
+  { q: "What is the primary function of mitochondria?", a: "To produce ATP through cellular respiration, serving as the cell's energy source." },
+  { q: "Define the cell membrane's role.", a: "It regulates what enters and exits the cell, maintaining homeostasis through selective permeability." },
+  { q: "What is the nucleus responsible for?", a: "It contains the cell's genetic material (DNA) and controls cell growth, reproduction, and protein synthesis." },
+  { q: "Describe the function of the endoplasmic reticulum.", a: "The rough ER synthesizes proteins; the smooth ER produces lipids and detoxifies chemicals." },
+  { q: "What role do lysosomes play?", a: "They contain digestive enzymes that break down waste materials and cellular debris." }
+];
+
+function startGeneration() {
+  const t = document.getElementById('gen-text');
+  if (t) t.value = "The cell is the basic structural and functional unit of all living organisms. Mitochondria produce ATP through cellular respiration. The nucleus controls the cell's activities and contains genetic information. The cell membrane regulates what enters and exits the cell.";
+}
+
+function generateCards() {
+  const text = document.getElementById('gen-text')?.value.trim();
+  if (!text) { showToast('⚠️ Please enter some text first', 'error'); return; }
+  document.getElementById('gen-empty').style.display = 'none';
+  document.getElementById('gen-result').style.display = 'none';
+  document.getElementById('gen-loading').style.display = 'block';
+  document.getElementById('gen-btn').disabled = true;
+  document.getElementById('gen-btn').textContent = '⏳ Generating...';
+  setTimeout(() => {
+    document.getElementById('gen-loading').style.display = 'none';
+    document.getElementById('gen-result').style.display = 'block';
+    document.getElementById('card-actions').style.display = 'flex';
+    document.getElementById('gen-btn').disabled = false;
+    document.getElementById('gen-btn').textContent = '⚡ Generate Flashcards';
+    document.getElementById('card-total').textContent = sampleCards.length;
+    document.getElementById('card-num').textContent = '1';
+    document.getElementById('preview-q').textContent = sampleCards[0].q;
+    document.getElementById('preview-a').textContent = sampleCards[0].a;
+    previewFlipped = false;
+    document.getElementById('preview-card')?.classList.remove('flipped');
+    const list = document.getElementById('cards-list');
+    list.innerHTML = '';
+    sampleCards.forEach((c, i) => {
+      list.innerHTML += `<div class="card-list-item">
+        <div>
+          <div class="card-list-q">Q: ${c.q}</div>
+          <div class="card-list-a">A: ${c.a}</div>
+        </div>
+        <div class="card-list-actions">
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="showToast('✏️ Card editor coming soon','info')">✏️</button>
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="this.closest('.card-list-item').remove();showToast('🗑️ Card deleted','info')">🗑️</button>
+        </div>
+      </div>`;
+    });
+    showToast(`✨ Generated ${sampleCards.length} flashcards!`, 'success');
+  }, 1800);
+}
+
+function flipPreviewCard() {
+  previewFlipped = !previewFlipped;
+  document.getElementById('preview-card').classList.toggle('flipped', previewFlipped);
+}
+
+function saveDeck() {
+  showToast('💾 Deck saved to "My Decks"!', 'success');
+  setTimeout(() => navigate('decks'), 800);
+}
+
+// ── STUDY MODE ──
+function restartStudy() {
+  studyIndex = 0; cardFlipped = false;
+  document.getElementById('study-session').style.display = 'block';
+  document.getElementById('study-complete').style.display = 'none';
+  updateStudyCard();
+}
+
+function updateStudyCard() {
+  const c = CARDS[studyIndex];
+  document.getElementById('study-q').textContent = c.q;
+  document.getElementById('study-a').textContent = c.a;
+  document.getElementById('study-card').classList.remove('flipped');
+  document.getElementById('study-counter').textContent = `${studyIndex+1} / ${CARDS.length}`;
+  document.getElementById('study-progress').style.width = `${((studyIndex) / CARDS.length) * 100}%`;
+  document.getElementById('rating-btns').style.opacity = '0.4';
+  document.getElementById('rating-btns').style.pointerEvents = 'none';
+  document.getElementById('tap-hint').textContent = '👆 Tap to reveal answer';
+  cardFlipped = false;
+}
+
+function flipStudyCard() {
+  cardFlipped = !cardFlipped;
+  document.getElementById('study-card').classList.toggle('flipped', cardFlipped);
+  if (cardFlipped) {
+    document.getElementById('rating-btns').style.opacity = '1';
+    document.getElementById('rating-btns').style.pointerEvents = 'auto';
+    document.getElementById('tap-hint').textContent = 'How well did you know this?';
+  }
+}
+
+function rateCard(rating) {
+  const msgs = { again:'Keep going, you\'ll get it! 💪', hard:'Good effort! 👍', good:'Nice work! 🎯', easy:'Excellent! ⭐' };
+  showToast(msgs[rating], 'success');
+  studyIndex++;
+  if (studyIndex >= CARDS.length) {
+    document.getElementById('study-session').style.display = 'none';
+    document.getElementById('study-complete').style.display = 'block';
+    document.getElementById('study-progress').style.width = '100%';
+  } else {
+    setTimeout(updateStudyCard, 200);
+  }
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  // Landing is shown by default, app shell hidden
+});
+</script>
+</body>
+</html>

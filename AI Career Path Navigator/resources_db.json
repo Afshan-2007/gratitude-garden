@@ -1,0 +1,38 @@
+[
+  { "topic": "Python", "level": "Beginner", "title": "Python for Data Science & AI", "platform": "IBM", "link": "https://www.coursera.org/learn/python-for-applied-data-science-ai" },
+  { "topic": "Python", "level": "Intermediate", "title": "Intermediate Python Mastery", "platform": "DataCamp", "link": "https://www.datacamp.com/courses/intermediate-python" },
+  { "topic": "Python", "level": "Advanced", "title": "Advanced Python for Engineers", "platform": "RealPython", "link": "https://realpython.com/" },
+  { "topic": "Machine Learning", "level": "Beginner", "title": "ML Specialization", "platform": "DeepLearning.AI", "link": "https://www.coursera.org/specializations/machine-learning-introduction" },
+  { "topic": "Machine Learning", "level": "Intermediate", "title": "Practical ML with Scikit-Learn", "platform": "Google", "link": "https://developers.google.com/machine-learning/crash-course" },
+  { "topic": "Machine Learning", "level": "Advanced", "title": "MLOps Specialization", "platform": "Coursera", "link": "https://www.coursera.org/specializations/machine-learning-engineering-for-production-mlops" },
+  { "topic": "Data Science", "level": "Beginner", "title": "Data Analytics Certificate", "platform": "Google", "link": "https://grow.google/certificates/data-analytics/" },
+  { "topic": "Data Science", "level": "Intermediate", "title": "Applied Data Science with Python", "platform": "U-Michigan", "link": "https://www.coursera.org/specializations/data-science-python" },
+  { "topic": "Data Science", "level": "Advanced", "title": "Statistics and Data Science", "platform": "MIT", "link": "https://www.edx.org/micromasters/mitx-statistics-and-data-science" },
+  { "topic": "Web Development", "level": "Beginner", "title": "The Web Developer Bootcamp", "platform": "Udemy", "link": "https://www.udemy.com/course/the-complete-web-development-bootcamp/" },
+  { "topic": "Web Development", "level": "Intermediate", "title": "Full Stack Open", "platform": "University of Helsinki", "link": "https://fullstackopen.com/en/" },
+  { "topic": "Web Development", "level": "Advanced", "title": "Frontend Masters: Architecture", "platform": "Frontend Masters", "link": "https://frontendmasters.com/" },
+  { "topic": "Cyber Security", "level": "Beginner", "title": "Google Cybersecurity Certificate", "platform": "Google", "link": "https://www.coursera.org/professional-certificates/google-cybersecurity" },
+  { "topic": "Cyber Security", "level": "Intermediate", "title": "Security+ Training", "platform": "Professor Messer", "link": "https://www.professormesser.com/" },
+  { "topic": "Cyber Security", "level": "Advanced", "title": "OSCP Penetration Testing", "platform": "OffSec", "link": "https://www.offsec.com/courses/pen-200/" },
+  {
+    "topic": "Artificial Intelligence",
+    "title": "Deep Learning Specialization",
+    "platform": "DeepLearning.AI",
+    "level": "Intermediate",
+    "link": "https://www.coursera.org/specializations/deep-learning"
+  },
+  {
+    "topic": "Artificial Intelligence",
+    "title": "Natural Language Processing",
+    "platform": "Stanford Online",
+    "level": "Advanced",
+    "link": "https://online.stanford.edu/courses/cs224n-natural-language-processing-deep-learning"
+  },
+  {
+  "topic": "AI",
+  "title": "Introduction to Artificial Intelligence",
+  "platform": "Elements of AI",
+  "level": "Beginner",
+  "link": "https://www.elementsofai.com/"
+}
+]
