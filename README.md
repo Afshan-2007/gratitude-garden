@@ -35,7 +35,9 @@ As days pass, the seed grows into a sprout, then a sapling, and eventually bloom
 
 ## 📸 Preview
 
-(Add screenshots here later)
+<img width="1919" height="908" alt="Screenshot 2026-05-18 141908" src="https://github.com/user-attachments/assets/de4c5d3d-46a5-4cfa-9440-233b342c27a1" />
+<img width="1918" height="883" alt="Screenshot 2026-05-18 141919" src="https://github.com/user-attachments/assets/121b33c5-5bad-41b9-9551-815b3b77d759" />
+
 
 ---
 
